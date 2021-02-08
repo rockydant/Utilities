@@ -1,0 +1,111 @@
+@using Admin.PageSubscriber.Services
+@using Admin.PageSubscriber.Models
+
+@namespace Admin.PageSubscriber
+@inherits ModuleBase
+@inject IPageSubscriberService PageSubscriberService
+@inject NavigationManager NavigationManager
+
+<div class="card o-hidden border-0 shadow-lg my-5">
+    <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="row">
+            <div class="col-lg-5 embed-responsive">
+                <iframe width="420" height="315"
+                        src="https://www.youtube.com/embed/DYbodH0KS-Y">
+                </iframe>
+            </div>
+            <div class="col-lg-7">
+                <div class="p-5">
+                    <div class="text-center">
+                        <h1 class="h4 text-gray-900 mb-4">Follow Us!</h1>
+                    </div>
+                    <form class="user">
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="text" class="form-control form-control-user" id="firstNameInput"
+                                       placeholder="First Name" @bind="@_firstName">
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control form-control-user" id="lastNameInput"
+                                       placeholder="Last Name" @bind="@_lastName">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="text" class="form-control form-control-user" id="emailInput"
+                                       placeholder="Email Address" @bind="@_email">
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control form-control-user" id="phoneInput"
+                                       placeholder="Phone Number" @bind="@_phone">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control form-control-user" id="addressInput"
+                                   placeholder="Address" @bind="@_address">
+                        </div>
+
+                        <button type="button" class="btn btn-success" @onclick="Save">Register Account</button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code { public override List<Resource> Resources => new List<Resource>()
+{
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Anonymous;
+
+    List<PageSubscriber> _PageSubscribers;
+    int _id;
+    string _firstName = string.Empty;
+    string _lastName = string.Empty;
+    string _email = string.Empty;
+    string _phone = string.Empty;
+    string _address = string.Empty;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _PageSubscribers = await PageSubscriberService.GetPageSubscribersAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading PageSubscriber {Error}", ex.Message);
+            AddModuleMessage("Error Loading PageSubscriber", MessageType.Error);
+        }
+    }
+    private async Task Save()
+    {
+        try
+        {
+            PageSubscriber PageSubscriber = new PageSubscriber();
+            PageSubscriber.ModuleId = ModuleState.ModuleId;
+            PageSubscriber.FirstName = _firstName;
+            PageSubscriber.LastName = _lastName;
+            PageSubscriber.Email = _email;
+            PageSubscriber.Phone = _phone;
+            PageSubscriber.Address = _address;
+            PageSubscriber = await PageSubscriberService.AddPageSubscriberAsync(PageSubscriber);
+            await logger.LogInformation("PageSubscriber Added {PageSubscriber}", PageSubscriber);
+            AddModuleMessage("Account Created Successfully", MessageType.Success);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving PageSubscriber {Error}", ex.Message);
+            AddModuleMessage("Error Saving This Account.", MessageType.Error);
+        }
+    }
+}

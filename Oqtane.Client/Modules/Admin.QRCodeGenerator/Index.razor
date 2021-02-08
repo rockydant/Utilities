@@ -1,0 +1,173 @@
+@using Admin.QRCodeGenerator.Services
+@using Admin.QRCodeGenerator.Models
+
+@namespace Admin.QRCodeGenerator
+@inherits ModuleBase
+@inject IQRCodeGeneratorService QRCodeGeneratorService
+@inject NavigationManager NavigationManager
+
+<div class="card o-hidden border-0 shadow-lg my-5">
+    <div class="card-body p-0">
+        <!-- Nested Row within Card Body -->
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="p-5">
+                    <div class="text-center">
+                        <h1 class="h4 text-gray-900 mb-4">Create New QR Code</h1>
+                    </div>
+                    <form class="user">
+                        <div class="form-group row">
+                            <div class="col-sm-6 mb-3 mb-sm-0">
+                                <input type="text" class="form-control form-control-user" id="firstNameInput"
+                                       placeholder="Business Name" @bind="@_name">
+                            </div>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control form-control-user" id="lastNameInput"
+                                       placeholder="Business Type" @bind="@_type">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12 mb-3 mb-sm-0">
+                                <FileManager UploadMultiple="false" ShowFiles="false" FileId="@_fileid" @ref="_fileManager" />
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-success" @onclick="Save">Create</button>
+
+                        @if (image != null)
+                        {
+                    <div class="form-group row">
+                        <div class="col-sm-5">
+                            <img class="img-thumbnail" src="data:image/png;base64,@Convert.ToBase64String(image)">
+                        </div>
+                    </div>}
+
+                        <div class="row">
+                            <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Advanced" AllowPaging="true" PageSize="4"
+                                        AllowSorting="true" Data="@_QRCodeGenerators" TItem="QRCodeGenerator" ColumnWidth="200px" AllowColumnResize="true">
+                                <Columns>
+                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="Name" Title="Name" />
+                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="Type" Title="Type" />
+                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
+                                        <Template Context="data">
+                                            <img class="img-thumbnail" src="@data.LinkUrl">
+                                        </Template>
+                                    </RadzenGridColumn>
+                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
+                                        <Template Context="data">
+                                            <img class="img-thumbnail" src="data:image/png;base64,@data.QrCode">
+                                        </Template>
+                                    </RadzenGridColumn>
+
+                                </Columns>
+                            </RadzenGrid>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+       
+    </div>
+</div>
+
+@code { public override List<Resource> Resources => new List<Resource>()
+{
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    List<QRCodeGenerator> _QRCodeGenerators;
+
+    private int _fileid = -1;
+
+    int _id;
+    string _name = string.Empty;
+    string _type = string.Empty;
+    string _linkUrl = string.Empty;
+    string _qrCode = string.Empty;
+
+    private byte[] image = null;
+
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    FileManager _fileManager;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _QRCodeGenerators = await QRCodeGeneratorService.GetQRCodeGeneratorsAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading QRCodeGenerator {Error}", ex.Message);
+            AddModuleMessage("Error Loading QRCodeGenerator", MessageType.Error);
+        }
+    }
+
+    private async Task Delete(QRCodeGenerator QRCodeGenerator)
+    {
+        try
+        {
+            await QRCodeGeneratorService.DeleteQRCodeGeneratorAsync(QRCodeGenerator.QRCodeGeneratorId, ModuleState.ModuleId);
+            await logger.LogInformation("QRCodeGenerator Deleted {QRCodeGenerator}", QRCodeGenerator);
+            _QRCodeGenerators = await QRCodeGeneratorService.GetQRCodeGeneratorsAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting QRCodeGenerator {QRCodeGenerator} {Error}", QRCodeGenerator, ex.Message);
+            AddModuleMessage("Error Deleting QRCodeGenerator", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            _fileManager.GetFileId();
+            QRCodeGenerator QRCodeGenerator = new QRCodeGenerator();
+            QRCodeGenerator.ModuleId = ModuleState.ModuleId;
+            QRCodeGenerator.Name = _name;
+            QRCodeGenerator.Type = _type;
+
+            _fileid = _fileManager.GetFileId();
+
+            if (_fileid != -1)
+            {
+                QRCodeGenerator.LinkUrl = ContentUrl(_fileid);
+            }
+
+            string tmpLink = PageState.Uri.Authority + QRCodeGenerator.LinkUrl;
+
+            this.HandleValidSubmit(tmpLink);
+
+            QRCodeGenerator.QrCode = @Convert.ToBase64String(image);
+
+            QRCodeGenerator = await QRCodeGeneratorService.AddQRCodeGeneratorAsync(QRCodeGenerator);
+
+            await logger.LogInformation("QRCodeGenerator Added {QRCodeGenerator}", QRCodeGenerator);
+            AddModuleMessage("QRCodeGenerator Created Successfully", MessageType.Success);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving PageSubscriber {Error}", ex.Message);
+            AddModuleMessage("Error Saving This Account.", MessageType.Error);
+        }
+    }
+
+    private void HandleValidSubmit(string linkUrl)
+    {
+        this.image = null;
+
+        QRCoder.QRCodeGenerator qrGenerator = new QRCoder.QRCodeGenerator();
+        QRCoder.QRCodeData qrData = qrGenerator.CreateQrCode(
+            linkUrl,
+            QRCoder.QRCodeGenerator.ECCLevel.Q);
+        QRCoder.PngByteQRCode qrCode = new QRCoder.PngByteQRCode(qrData);
+
+        this.image = qrCode.GetGraphic(20);
+    } }

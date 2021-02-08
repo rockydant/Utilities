@@ -1,0 +1,71 @@
+@using Admin.PageSubscriberDashboard.Services
+@using Admin.PageSubscriberDashboard.Models
+@using Admin.PageSubscriber.Services
+@using Admin.PageSubscriber.Models
+
+
+@namespace Admin.PageSubscriberDashboard
+@inherits ModuleBase
+@inject IPageSubscriberDashboardService PageSubscriberDashboardService
+@inject IPageSubscriberService PageSubscriberService
+@inject NavigationManager NavigationManager
+
+
+
+<RadzenButton Text="Excel" Icon="grid_on" Click="@(args => Export("excel"))" Style="margin-bottom:20px" />
+<RadzenGrid @ref="grid" AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Advanced" AllowPaging="true" PageSize="4"
+            AllowSorting="true" Data="@_PageSubscribers" TItem="PageSubscriber" ColumnWidth="200px" AllowColumnResize="true">
+    <Columns>
+        <RadzenGridColumn TItem="PageSubscriber" Property="FirstName" Title="First Name" />
+        <RadzenGridColumn TItem="PageSubscriber" Property="LastName" Title="Last Name" />
+        <RadzenGridColumn TItem="PageSubscriber" Property="Phone" Title="Phone" />
+        <RadzenGridColumn TItem="PageSubscriber" Property="Email" Title="Email" />
+        <RadzenGridColumn TItem="PageSubscriber" Property="Address" Title="Address" />
+    </Columns>
+</RadzenGrid>
+
+@code { public override List<Resource> Resources => new List<Resource>()
+{
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    RadzenGrid<PageSubscriber> grid;
+
+    List<PageSubscriber> _PageSubscribers;
+    List<PageSubscriberDashboard> _PageSubscriberDashboards;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _PageSubscribers = await PageSubscriberService.GetPageSubscribersAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading PageSubscriberDashboard {Error}", ex.Message);
+            AddModuleMessage("Error Loading PageSubscriberDashboard", MessageType.Error);
+        }
+    }
+
+    private async Task Delete(PageSubscriberDashboard PageSubscriberDashboard)
+    {
+        try
+        {
+            await PageSubscriberDashboardService.DeletePageSubscriberDashboardAsync(PageSubscriberDashboard.PageSubscriberDashboardId, ModuleState.ModuleId);
+            await logger.LogInformation("PageSubscriberDashboard Deleted {PageSubscriberDashboard}", PageSubscriberDashboard);
+            _PageSubscriberDashboards = await PageSubscriberDashboardService.GetPageSubscriberDashboardsAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting PageSubscriberDashboard {PageSubscriberDashboard} {Error}", PageSubscriberDashboard, ex.Message);
+            AddModuleMessage("Error Deleting PageSubscriberDashboard", MessageType.Error);
+        }
+    }
+
+    public void Export(string type)
+    {
+        //PageSubscriberService.Export("_PageSubscribers", type, new Query() { OrderBy = grid.Query.OrderBy, Filter = grid.Query.Filter });
+    }
+    }

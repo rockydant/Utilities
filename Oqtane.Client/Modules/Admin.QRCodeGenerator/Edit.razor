@@ -1,0 +1,100 @@
+@using Oqtane.Modules.Controls
+@using Admin.QRCodeGenerator.Services
+@using Admin.QRCodeGenerator.Models
+
+@namespace Admin.QRCodeGenerator
+@inherits ModuleBase
+@inject IQRCodeGeneratorService QRCodeGeneratorService
+@inject NavigationManager NavigationManager
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <Label For="name" HelpText="Enter a name">Name: </Label>
+        </td>
+        <td>
+            <input id="name" class="form-control" @bind="@_name" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+
+    public override string Actions => "Add,Edit";
+
+    public override string Title => "Manage QRCodeGenerator";
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" }
+    };
+
+    int _id;
+    string _name;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                QRCodeGenerator QRCodeGenerator = await QRCodeGeneratorService.GetQRCodeGeneratorAsync(_id, ModuleState.ModuleId);
+                if (QRCodeGenerator != null)
+                {
+                    _name = QRCodeGenerator.Name;
+                    _createdby = QRCodeGenerator.CreatedBy;
+                    _createdon = QRCodeGenerator.CreatedOn;
+                    _modifiedby = QRCodeGenerator.ModifiedBy;
+                    _modifiedon = QRCodeGenerator.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading QRCodeGenerator {QRCodeGeneratorId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading QRCodeGenerator", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                QRCodeGenerator QRCodeGenerator = new QRCodeGenerator();
+                QRCodeGenerator.ModuleId = ModuleState.ModuleId;
+                QRCodeGenerator.Name = _name;
+                QRCodeGenerator = await QRCodeGeneratorService.AddQRCodeGeneratorAsync(QRCodeGenerator);
+                await logger.LogInformation("QRCodeGenerator Added {QRCodeGenerator}", QRCodeGenerator);
+            }
+            else
+            {
+                QRCodeGenerator QRCodeGenerator = await QRCodeGeneratorService.GetQRCodeGeneratorAsync(_id, ModuleState.ModuleId);
+                QRCodeGenerator.Name = _name;
+                await QRCodeGeneratorService.UpdateQRCodeGeneratorAsync(QRCodeGenerator);
+                await logger.LogInformation("QRCodeGenerator Updated {QRCodeGenerator}", QRCodeGenerator);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving QRCodeGenerator {Error}", ex.Message);
+            AddModuleMessage("Error Saving QRCodeGenerator", MessageType.Error);
+        }
+    }
+}

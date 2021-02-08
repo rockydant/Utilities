@@ -1,0 +1,100 @@
+@using Oqtane.Modules.Controls
+@using Admin.PageSubscriberDashboard.Services
+@using Admin.PageSubscriberDashboard.Models
+
+@namespace Admin.PageSubscriberDashboard
+@inherits ModuleBase
+@inject IPageSubscriberDashboardService PageSubscriberDashboardService
+@inject NavigationManager NavigationManager
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <Label For="name" HelpText="Enter a name">Name: </Label>
+        </td>
+        <td>
+            <input id="name" class="form-control" @bind="@_name" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+
+    public override string Actions => "Add,Edit";
+
+    public override string Title => "Manage PageSubscriberDashboard";
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" }
+    };
+
+    int _id;
+    string _name;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                PageSubscriberDashboard PageSubscriberDashboard = await PageSubscriberDashboardService.GetPageSubscriberDashboardAsync(_id, ModuleState.ModuleId);
+                if (PageSubscriberDashboard != null)
+                {
+                    _name = PageSubscriberDashboard.Name;
+                    _createdby = PageSubscriberDashboard.CreatedBy;
+                    _createdon = PageSubscriberDashboard.CreatedOn;
+                    _modifiedby = PageSubscriberDashboard.ModifiedBy;
+                    _modifiedon = PageSubscriberDashboard.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading PageSubscriberDashboard {PageSubscriberDashboardId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading PageSubscriberDashboard", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                PageSubscriberDashboard PageSubscriberDashboard = new PageSubscriberDashboard();
+                PageSubscriberDashboard.ModuleId = ModuleState.ModuleId;
+                PageSubscriberDashboard.Name = _name;
+                PageSubscriberDashboard = await PageSubscriberDashboardService.AddPageSubscriberDashboardAsync(PageSubscriberDashboard);
+                await logger.LogInformation("PageSubscriberDashboard Added {PageSubscriberDashboard}", PageSubscriberDashboard);
+            }
+            else
+            {
+                PageSubscriberDashboard PageSubscriberDashboard = await PageSubscriberDashboardService.GetPageSubscriberDashboardAsync(_id, ModuleState.ModuleId);
+                PageSubscriberDashboard.Name = _name;
+                await PageSubscriberDashboardService.UpdatePageSubscriberDashboardAsync(PageSubscriberDashboard);
+                await logger.LogInformation("PageSubscriberDashboard Updated {PageSubscriberDashboard}", PageSubscriberDashboard);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving PageSubscriberDashboard {Error}", ex.Message);
+            AddModuleMessage("Error Saving PageSubscriberDashboard", MessageType.Error);
+        }
+    }
+}
