@@ -16,6 +16,7 @@
     <PackageReleaseNotes>https://github.com/oqtane/oqtane.framework/releases/tag/v2.0.0</PackageReleaseNotes>
     <RootNamespace>Oqtane</RootNamespace>
     <IsPackable>true</IsPackable>
+    <UserSecretsId>6c3487f7-6dd0-4f06-88c2-97b865c6e2cb</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="wwwroot\Modules\Templates\**" />
@@ -67,7 +68,7 @@
     <TemplateFiles Include="$(ProjectDir)wwwroot\Modules\Templates\**\*.*" />
   </ItemGroup>
   <Target Name="AddPayloadsFolder" AfterTargets="Publish">
-    <Copy SourceFiles="@(UpgradeFiles)" DestinationFiles="@(UpgradeFiles-&gt;'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
-    <Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles-&gt;'$(PublishDir)wwwroot\Modules\Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(UpgradeFiles)" DestinationFiles="@(UpgradeFiles->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles->'$(PublishDir)wwwroot\Modules\Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
   </Target>
 </Project>
