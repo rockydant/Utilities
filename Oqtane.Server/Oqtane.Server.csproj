@@ -28,6 +28,10 @@
     <EmbeddedResource Include="Modules\Admin.PageSubscriberDashboard\Scripts\Admin.PageSubscriberDashboard.Uninstall.sql" />
     <EmbeddedResource Include="Modules\Admin.QRCodeGenerator\Scripts\Admin.QRCodeGenerator.1.0.0.sql" />
     <EmbeddedResource Include="Modules\Admin.QRCodeGenerator\Scripts\Admin.QRCodeGenerator.Uninstall.sql" />
+    <EmbeddedResource Include="Modules\Admin.BusinessCardDisplay\Scripts\Admin.BusinessCardDisplay.1.0.0.sql" />
+    <EmbeddedResource Include="Modules\Admin.BusinessCardDisplay\Scripts\Admin.BusinessCardDisplay.Uninstall.sql" />
+    <EmbeddedResource Include="Modules\Admin.BusinessCardDashboard\Scripts\Admin.BusinessCardDashboard.1.0.0.sql" />
+    <EmbeddedResource Include="Modules\Admin.BusinessCardDashboard\Scripts\Admin.BusinessCardDashboard.Uninstall.sql" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Master.00.00.00.00.sql" />
@@ -68,7 +72,7 @@
     <TemplateFiles Include="$(ProjectDir)wwwroot\Modules\Templates\**\*.*" />
   </ItemGroup>
   <Target Name="AddPayloadsFolder" AfterTargets="Publish">
-    <Copy SourceFiles="@(UpgradeFiles)" DestinationFiles="@(UpgradeFiles->'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
-    <Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles->'$(PublishDir)wwwroot\Modules\Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(UpgradeFiles)" DestinationFiles="@(UpgradeFiles-&gt;'$(PublishDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="@(TemplateFiles)" DestinationFiles="@(TemplateFiles-&gt;'$(PublishDir)wwwroot\Modules\Templates\%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="false" />
   </Target>
 </Project>

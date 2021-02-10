@@ -1,0 +1,100 @@
+@using Admin.BusinessCardDashboard.Services
+@using Admin.BusinessCardDashboard.Models
+
+@namespace Admin.BusinessCardDashboard
+@inherits ModuleBase
+@inject IBusinessCardDashboardService BusinessCardDashboardService
+@inject NavigationManager NavigationManager
+
+@if (_BusinessCardDashboards == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add BusinessCardDashboard" />
+    <br />
+    <br />
+    @if (@_BusinessCardDashboards.Count != 0)
+    {
+        <Pager Items="@_BusinessCardDashboards">
+            <Header>
+                <th style="width: 1px;">&nbsp;</th>
+                <th style="width: 1px;">&nbsp;</th>
+                <th>Name</th>
+            </Header>
+            <Row>
+                <td><ActionLink Action="Edit" Parameters="@($"id=" + context.BusinessCardDashboardId.ToString())" /></td>
+                <td><ActionDialog Header="Delete BusinessCardDashboard" Message="@("Are You Sure You Wish To Delete The " + context.Name + " BusinessCardDashboard?")" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" /></td>
+                <td>@context.Name</td>
+            </Row>
+        </Pager>
+    }
+    else
+    {
+        <p>No BusinessCardDashboards To Display</p>
+    }
+}
+
+<!-- The content below is for informational purposes only and can be safely removed -->
+
+<hr />
+BusinessCardDashboard Module Created Successfully. Use Edit Mode To Add A BusinessCardDashboard. You Can Access The Files At The Following Locations:<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Client\Modules\BusinessCardDashboard\<br />
+- Edit.razor - component for adding or editing content<br />
+- Index.razor - main component for your module **the content you are reading is in this file**<br />
+- ModuleInfo.cs - implements IModule interface to provide configuration settings for your module<br />
+- Settings.razor - component for managing module settings<br />
+- Services\IBusinessCardDashboardService.cs - interface for defining service API methods<br />
+- Services\BusinessCardDashboardService.cs - implements service API interface methods<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Server\Modules\BusinessCardDashboard\<br />
+- Controllers\BusinessCardDashboardController.cs - API methods implemented using a REST pattern<br />
+- Manager\BusinessCardDashboardManager.cs - implements optional module interfaces for features such as import/export of content<br />
+- Repository\IBusinessCardDashboardRepository.cs - interface for defining repository methods<br />
+- Repository\BusinessCardDashboardRespository.cs - implements repository interface methods for data access using EF Core<br />
+- Repository\BusinessCardDashboardContext.cs - provides a DB Context for data access<br />
+- Scripts\Admin.BusinessCardDashboards.1.0.0.sql - database schema definition script<br />
+- Scripts\Admin.BusinessCardDashboards.Uninstall.sql - database uninstall script<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Shared\Modules\BusinessCardDashboard\<br />
+- Models\BusinessCardDashboard.cs - model definition<br /><br />
+
+<!-- The content above is for informational purposes only and can be safely removed -->
+
+@code {
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    List<BusinessCardDashboard> _BusinessCardDashboards;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _BusinessCardDashboards = await BusinessCardDashboardService.GetBusinessCardDashboardsAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading BusinessCardDashboard {Error}", ex.Message);
+            AddModuleMessage("Error Loading BusinessCardDashboard", MessageType.Error);
+        }
+    }
+
+    private async Task Delete(BusinessCardDashboard BusinessCardDashboard)
+    {
+        try
+        {
+            await BusinessCardDashboardService.DeleteBusinessCardDashboardAsync(BusinessCardDashboard.BusinessCardDashboardId, ModuleState.ModuleId);
+            await logger.LogInformation("BusinessCardDashboard Deleted {BusinessCardDashboard}", BusinessCardDashboard);
+            _BusinessCardDashboards = await BusinessCardDashboardService.GetBusinessCardDashboardsAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting BusinessCardDashboard {BusinessCardDashboard} {Error}", BusinessCardDashboard, ex.Message);
+            AddModuleMessage("Error Deleting BusinessCardDashboard", MessageType.Error);
+        }
+    }
+}

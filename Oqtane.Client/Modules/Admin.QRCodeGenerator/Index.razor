@@ -32,36 +32,47 @@
                             </div>
                         </div>
 
-                        <button type="button" class="btn btn-success" @onclick="Save">Create</button>
+                        <div class="form-group row">
+                            <button type="button" class="btn btn-success" @onclick="Save">Create</button>
+                        </div>                            
 
-                        @if (image != null)
-                        {
-                    <div class="form-group row">
+                            @if (image != null)
+                            {
+                    <div class="form-group row justify-center-center">
                         <div class="col-sm-5">
                             <img class="img-thumbnail" src="data:image/png;base64,@Convert.ToBase64String(image)">
                         </div>
                     </div>}
 
-                        <div class="row">
-                            <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Advanced" AllowPaging="true" PageSize="4"
-                                        AllowSorting="true" Data="@_QRCodeGenerators" TItem="QRCodeGenerator" ColumnWidth="200px" AllowColumnResize="true">
-                                <Columns>
-                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="Name" Title="Name" />
-                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="Type" Title="Type" />
-                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
-                                        <Template Context="data">
-                                            <img class="img-thumbnail" src="@data.LinkUrl">
-                                        </Template>
-                                    </RadzenGridColumn>
-                                    <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
-                                        <Template Context="data">
-                                            <img class="img-thumbnail" src="data:image/png;base64,@data.QrCode">
-                                        </Template>
-                                    </RadzenGridColumn>
-
-                                </Columns>
-                            </RadzenGrid>
-                        </div>
+                            <div class="row">
+                                <RadzenGrid AllowFiltering="true" FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" FilterMode="FilterMode.Advanced" AllowPaging="true" PageSize="4"
+                                            AllowSorting="true" Data="@_QRCodeGenerators" TItem="QRCodeGenerator" ColumnWidth="200px" AllowColumnResize="true">
+                                    <Columns>
+                                        <RadzenGridColumn TItem="QRCodeGenerator" Property="Name" Title="Name" />
+                                        <RadzenGridColumn TItem="QRCodeGenerator" Property="Type" Title="Type" />
+                                        <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
+                                            <Template Context="data">
+                                                <img class="img-thumbnail" src="@data.LinkUrl">
+                                            </Template>
+                                        </RadzenGridColumn>
+                                        <RadzenGridColumn TItem="QRCodeGenerator" Property="LinkUrl" Title="Photo">
+                                            <Template Context="data">
+                                                <img class="img-thumbnail" src="data:image/png;base64,@data.QrCode">
+                                            </Template>
+                                        </RadzenGridColumn>                                        
+                                        <RadzenGridColumn TItem="QRCodeGenerator" Context="order" Bubble="false" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="70px">
+                                            <Template Context="data">
+                                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => Delete(data))">
+                                                </RadzenButton>
+                                            </Template>
+                                            <EditTemplate Context="data">
+                                                <RadzenButton ButtonStyle="ButtonStyle.Danger" Icon="close" Size="ButtonSize.Small" Click="@(args => Delete(data))">
+                                                </RadzenButton>
+                                            </EditTemplate>
+                                        </RadzenGridColumn>
+                                    </Columns>
+                                </RadzenGrid>
+                            </div>
                     </form>
                 </div>
             </div>
@@ -151,6 +162,8 @@
 
             await logger.LogInformation("QRCodeGenerator Added {QRCodeGenerator}", QRCodeGenerator);
             AddModuleMessage("QRCodeGenerator Created Successfully", MessageType.Success);
+
+            StateHasChanged();
         }
         catch (Exception ex)
         {

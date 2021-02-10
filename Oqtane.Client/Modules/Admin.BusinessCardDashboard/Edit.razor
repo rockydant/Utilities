@@ -1,0 +1,100 @@
+@using Oqtane.Modules.Controls
+@using Admin.BusinessCardDashboard.Services
+@using Admin.BusinessCardDashboard.Models
+
+@namespace Admin.BusinessCardDashboard
+@inherits ModuleBase
+@inject IBusinessCardDashboardService BusinessCardDashboardService
+@inject NavigationManager NavigationManager
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <Label For="name" HelpText="Enter a name">Name: </Label>
+        </td>
+        <td>
+            <input id="name" class="form-control" @bind="@_name" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+
+    public override string Actions => "Add,Edit";
+
+    public override string Title => "Manage BusinessCardDashboard";
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" }
+    };
+
+    int _id;
+    string _name;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                BusinessCardDashboard BusinessCardDashboard = await BusinessCardDashboardService.GetBusinessCardDashboardAsync(_id, ModuleState.ModuleId);
+                if (BusinessCardDashboard != null)
+                {
+                    _name = BusinessCardDashboard.Name;
+                    _createdby = BusinessCardDashboard.CreatedBy;
+                    _createdon = BusinessCardDashboard.CreatedOn;
+                    _modifiedby = BusinessCardDashboard.ModifiedBy;
+                    _modifiedon = BusinessCardDashboard.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading BusinessCardDashboard {BusinessCardDashboardId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading BusinessCardDashboard", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                BusinessCardDashboard BusinessCardDashboard = new BusinessCardDashboard();
+                BusinessCardDashboard.ModuleId = ModuleState.ModuleId;
+                BusinessCardDashboard.Name = _name;
+                BusinessCardDashboard = await BusinessCardDashboardService.AddBusinessCardDashboardAsync(BusinessCardDashboard);
+                await logger.LogInformation("BusinessCardDashboard Added {BusinessCardDashboard}", BusinessCardDashboard);
+            }
+            else
+            {
+                BusinessCardDashboard BusinessCardDashboard = await BusinessCardDashboardService.GetBusinessCardDashboardAsync(_id, ModuleState.ModuleId);
+                BusinessCardDashboard.Name = _name;
+                await BusinessCardDashboardService.UpdateBusinessCardDashboardAsync(BusinessCardDashboard);
+                await logger.LogInformation("BusinessCardDashboard Updated {BusinessCardDashboard}", BusinessCardDashboard);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving BusinessCardDashboard {Error}", ex.Message);
+            AddModuleMessage("Error Saving BusinessCardDashboard", MessageType.Error);
+        }
+    }
+}

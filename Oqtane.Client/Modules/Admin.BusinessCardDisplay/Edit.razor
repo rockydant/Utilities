@@ -1,0 +1,100 @@
+@using Oqtane.Modules.Controls
+@using Admin.BusinessCardDisplay.Services
+@using Admin.BusinessCardDisplay.Models
+
+@namespace Admin.BusinessCardDisplay
+@inherits ModuleBase
+@inject IBusinessCardDisplayService BusinessCardDisplayService
+@inject NavigationManager NavigationManager
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <Label For="name" HelpText="Enter a name">Name: </Label>
+        </td>
+        <td>
+            <input id="name" class="form-control" @bind="@_name" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+
+    public override string Actions => "Add,Edit";
+
+    public override string Title => "Manage BusinessCardDisplay";
+
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" }
+    };
+
+    int _id;
+    string _name;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                BusinessCardDisplay BusinessCardDisplay = await BusinessCardDisplayService.GetBusinessCardDisplayAsync(_id, ModuleState.ModuleId);
+                if (BusinessCardDisplay != null)
+                {
+                    _name = BusinessCardDisplay.Name;
+                    _createdby = BusinessCardDisplay.CreatedBy;
+                    _createdon = BusinessCardDisplay.CreatedOn;
+                    _modifiedby = BusinessCardDisplay.ModifiedBy;
+                    _modifiedon = BusinessCardDisplay.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading BusinessCardDisplay {BusinessCardDisplayId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading BusinessCardDisplay", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                BusinessCardDisplay BusinessCardDisplay = new BusinessCardDisplay();
+                BusinessCardDisplay.ModuleId = ModuleState.ModuleId;
+                BusinessCardDisplay.Name = _name;
+                BusinessCardDisplay = await BusinessCardDisplayService.AddBusinessCardDisplayAsync(BusinessCardDisplay);
+                await logger.LogInformation("BusinessCardDisplay Added {BusinessCardDisplay}", BusinessCardDisplay);
+            }
+            else
+            {
+                BusinessCardDisplay BusinessCardDisplay = await BusinessCardDisplayService.GetBusinessCardDisplayAsync(_id, ModuleState.ModuleId);
+                BusinessCardDisplay.Name = _name;
+                await BusinessCardDisplayService.UpdateBusinessCardDisplayAsync(BusinessCardDisplay);
+                await logger.LogInformation("BusinessCardDisplay Updated {BusinessCardDisplay}", BusinessCardDisplay);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving BusinessCardDisplay {Error}", ex.Message);
+            AddModuleMessage("Error Saving BusinessCardDisplay", MessageType.Error);
+        }
+    }
+}

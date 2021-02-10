@@ -1,0 +1,100 @@
+@using Admin.BusinessCardDisplay.Services
+@using Admin.BusinessCardDisplay.Models
+
+@namespace Admin.BusinessCardDisplay
+@inherits ModuleBase
+@inject IBusinessCardDisplayService BusinessCardDisplayService
+@inject NavigationManager NavigationManager
+
+@if (_BusinessCardDisplays == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add BusinessCardDisplay" />
+    <br />
+    <br />
+    @if (@_BusinessCardDisplays.Count != 0)
+    {
+        <Pager Items="@_BusinessCardDisplays">
+            <Header>
+                <th style="width: 1px;">&nbsp;</th>
+                <th style="width: 1px;">&nbsp;</th>
+                <th>Name</th>
+            </Header>
+            <Row>
+                <td><ActionLink Action="Edit" Parameters="@($"id=" + context.BusinessCardDisplayId.ToString())" /></td>
+                <td><ActionDialog Header="Delete BusinessCardDisplay" Message="@("Are You Sure You Wish To Delete The " + context.Name + " BusinessCardDisplay?")" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(context))" /></td>
+                <td>@context.Name</td>
+            </Row>
+        </Pager>
+    }
+    else
+    {
+        <p>No BusinessCardDisplays To Display</p>
+    }
+}
+
+<!-- The content below is for informational purposes only and can be safely removed -->
+
+<hr />
+BusinessCardDisplay Module Created Successfully. Use Edit Mode To Add A BusinessCardDisplay. You Can Access The Files At The Following Locations:<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Client\Modules\BusinessCardDisplay\<br />
+- Edit.razor - component for adding or editing content<br />
+- Index.razor - main component for your module **the content you are reading is in this file**<br />
+- ModuleInfo.cs - implements IModule interface to provide configuration settings for your module<br />
+- Settings.razor - component for managing module settings<br />
+- Services\IBusinessCardDisplayService.cs - interface for defining service API methods<br />
+- Services\BusinessCardDisplayService.cs - implements service API interface methods<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Server\Modules\BusinessCardDisplay\<br />
+- Controllers\BusinessCardDisplayController.cs - API methods implemented using a REST pattern<br />
+- Manager\BusinessCardDisplayManager.cs - implements optional module interfaces for features such as import/export of content<br />
+- Repository\IBusinessCardDisplayRepository.cs - interface for defining repository methods<br />
+- Repository\BusinessCardDisplayRespository.cs - implements repository interface methods for data access using EF Core<br />
+- Repository\BusinessCardDisplayContext.cs - provides a DB Context for data access<br />
+- Scripts\Admin.BusinessCardDisplays.1.0.0.sql - database schema definition script<br />
+- Scripts\Admin.BusinessCardDisplays.Uninstall.sql - database uninstall script<br /><br />
+D:\Projects\oqtane.framework-master\Oqtane.Shared\Modules\BusinessCardDisplay\<br />
+- Models\BusinessCardDisplay.cs - model definition<br /><br />
+
+<!-- The content above is for informational purposes only and can be safely removed -->
+
+@code {
+    public override List<Resource> Resources => new List<Resource>()
+    {
+        new Resource { ResourceType = ResourceType.Stylesheet, Url = ModulePath() + "Module.css" },
+        new Resource { ResourceType = ResourceType.Script, Url = ModulePath() + "Module.js" }
+    };
+
+    List<BusinessCardDisplay> _BusinessCardDisplays;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _BusinessCardDisplays = await BusinessCardDisplayService.GetBusinessCardDisplaysAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading BusinessCardDisplay {Error}", ex.Message);
+            AddModuleMessage("Error Loading BusinessCardDisplay", MessageType.Error);
+        }
+    }
+
+    private async Task Delete(BusinessCardDisplay BusinessCardDisplay)
+    {
+        try
+        {
+            await BusinessCardDisplayService.DeleteBusinessCardDisplayAsync(BusinessCardDisplay.BusinessCardDisplayId, ModuleState.ModuleId);
+            await logger.LogInformation("BusinessCardDisplay Deleted {BusinessCardDisplay}", BusinessCardDisplay);
+            _BusinessCardDisplays = await BusinessCardDisplayService.GetBusinessCardDisplaysAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting BusinessCardDisplay {BusinessCardDisplay} {Error}", BusinessCardDisplay, ex.Message);
+            AddModuleMessage("Error Deleting BusinessCardDisplay", MessageType.Error);
+        }
+    }
+}
