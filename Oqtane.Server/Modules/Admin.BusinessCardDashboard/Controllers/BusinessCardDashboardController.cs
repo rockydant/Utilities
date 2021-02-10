@@ -42,7 +42,20 @@ namespace Admin.BusinessCardDashboard.Controllers
         public Models.BusinessCardDashboard Get(int id)
         {
             Models.BusinessCardDashboard BusinessCardDashboard = _BusinessCardDashboardRepository.GetBusinessCardDashboard(id);
-            if (BusinessCardDashboard != null && BusinessCardDashboard.ModuleId != _entityId)
+            if (BusinessCardDashboard != null)
+            {
+                BusinessCardDashboard = null;
+            }
+            return BusinessCardDashboard;
+        }
+
+        // GET api/<controller>/5
+        [HttpGet("{BusinessCardDashboardName}")]
+        [Authorize(Policy = PolicyNames.ViewModule)]
+        public Models.BusinessCardDashboard GetByName(string BusinessCardDashboardName)
+        {
+            Models.BusinessCardDashboard BusinessCardDashboard = _BusinessCardDashboardRepository.GetBusinessCardDashboard(BusinessCardDashboardName);
+            if (BusinessCardDashboard != null)
             {
                 BusinessCardDashboard = null;
             }

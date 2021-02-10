@@ -163,6 +163,8 @@
             await logger.LogInformation("QRCodeGenerator Added {QRCodeGenerator}", QRCodeGenerator);
             AddModuleMessage("QRCodeGenerator Created Successfully", MessageType.Success);
 
+            _QRCodeGenerators = await QRCodeGeneratorService.GetQRCodeGeneratorsAsync(ModuleState.ModuleId);
+
             StateHasChanged();
         }
         catch (Exception ex)

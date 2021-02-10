@@ -25,6 +25,11 @@ namespace Admin.BusinessCardDashboard.Repository
             return _db.BusinessCardDashboard.Find(BusinessCardDashboardId);
         }
 
+        public Models.BusinessCardDashboard GetBusinessCardDashboard(string BusinessCardDashboardName)
+        {
+            return _db.BusinessCardDashboard.Find(BusinessCardDashboardName);
+        }
+
         public Models.BusinessCardDashboard AddBusinessCardDashboard(Models.BusinessCardDashboard BusinessCardDashboard)
         {
             _db.BusinessCardDashboard.Add(BusinessCardDashboard);

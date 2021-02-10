@@ -7,6 +7,8 @@ namespace Admin.BusinessCardDashboard.Repository
     {
         IEnumerable<Models.BusinessCardDashboard> GetBusinessCardDashboards(int ModuleId);
         Models.BusinessCardDashboard GetBusinessCardDashboard(int BusinessCardDashboardId);
+
+        Models.BusinessCardDashboard GetBusinessCardDashboard(string BusinessCardDashboardName);
         Models.BusinessCardDashboard AddBusinessCardDashboard(Models.BusinessCardDashboard BusinessCardDashboard);
         Models.BusinessCardDashboard UpdateBusinessCardDashboard(Models.BusinessCardDashboard BusinessCardDashboard);
         void DeleteBusinessCardDashboard(int BusinessCardDashboardId);

@@ -10,6 +10,9 @@ namespace Admin.BusinessCardDashboard.Models
         public int BusinessCardDashboardId { get; set; }
         public int ModuleId { get; set; }
         public string Name { get; set; }
+        public string Type { get; set; }
+        public string LinkUrl { get; set; }
+        public string QrCode { get; set; }
 
         public string CreatedBy { get; set; }
         public DateTime CreatedOn { get; set; }

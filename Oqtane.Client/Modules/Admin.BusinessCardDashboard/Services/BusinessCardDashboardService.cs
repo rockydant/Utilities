@@ -26,6 +26,11 @@ namespace Admin.BusinessCardDashboard.Services
             return BusinessCardDashboards.OrderBy(item => item.Name).ToList();
         }
 
+        public async Task<Models.BusinessCardDashboard> GetBusinessCardDashboardAsync(string BusinessCardDashboardName, int ModuleId)
+        {
+            return await GetJsonAsync<Models.BusinessCardDashboard>(CreateAuthorizationPolicyUrl($"{Apiurl}/{BusinessCardDashboardName}", ModuleId));
+        }
+
         public async Task<Models.BusinessCardDashboard> GetBusinessCardDashboardAsync(int BusinessCardDashboardId, int ModuleId)
         {
             return await GetJsonAsync<Models.BusinessCardDashboard>(CreateAuthorizationPolicyUrl($"{Apiurl}/{BusinessCardDashboardId}", ModuleId));

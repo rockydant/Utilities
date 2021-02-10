@@ -9,6 +9,7 @@ namespace Admin.BusinessCardDashboard.Services
         Task<List<Models.BusinessCardDashboard>> GetBusinessCardDashboardsAsync(int ModuleId);
 
         Task<Models.BusinessCardDashboard> GetBusinessCardDashboardAsync(int BusinessCardDashboardId, int ModuleId);
+        Task<Models.BusinessCardDashboard> GetBusinessCardDashboardAsync(string BusinessCardDashboardName, int ModuleId);
 
         Task<Models.BusinessCardDashboard> AddBusinessCardDashboardAsync(Models.BusinessCardDashboard BusinessCardDashboard);
 
