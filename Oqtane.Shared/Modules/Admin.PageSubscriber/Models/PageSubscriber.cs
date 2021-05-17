@@ -19,5 +19,6 @@ namespace Admin.PageSubscriber.Models
         public DateTime CreatedOn { get; set; }
         public string ModifiedBy { get; set; }
         public DateTime ModifiedOn { get; set; }
+        public int NoAttendee { get; set; }
     }
 }

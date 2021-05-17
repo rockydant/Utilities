@@ -24,29 +24,39 @@
                         <div class="form-group row">
                             <div class="col-sm-6 mb-3 mb-sm-0">
                                 <input type="text" class="form-control form-control-user" id="firstNameInput"
-                                       placeholder="First Name" @bind="@_firstName">
+                                       placeholder="First Name/ Tên" @bind="@_firstName">
                             </div>
                             <div class="col-sm-6">
                                 <input type="text" class="form-control form-control-user" id="lastNameInput"
-                                       placeholder="Last Name" @bind="@_lastName">
+                                       placeholder="Last Name/ Họ" @bind="@_lastName">
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-sm-6 mb-3 mb-sm-0">
-                                <input type="text" class="form-control form-control-user" id="emailInput"
-                                       placeholder="Email Address" @bind="@_email">
+                                <input type="email" class="form-control form-control-user" id="emailInput"
+                                       placeholder="Email Address/ Địa Chỉ Email" @bind="@_email">
                             </div>
                             <div class="col-sm-6">
-                                <input type="text" class="form-control form-control-user" id="phoneInput"
-                                       placeholder="Phone Number" @bind="@_phone">
+                                <input type="tel" class="form-control form-control-user" id="phoneInput"
+                                       placeholder="Phone Number/ Số Điện Thoại" @bind="@_phone">
                             </div>
                         </div>
                         <div class="form-group">
                             <input type="text" class="form-control form-control-user" id="addressInput"
-                                   placeholder="Address" @bind="@_address">
+                                   placeholder="Address/ Địa Chỉ" @bind="@_address">
                         </div>
-
-                        <button type="button" class="btn btn-success" @onclick="Save">Register Account</button>
+                        <div class="form-group">
+                            <label>Number of Attendees/ Số Người Tham Dự</label>
+                            <input type="number" class="form-control form-control-user" id="attendeeInput"
+                                   placeholder="Number of Attendees/ Số Người Tham Dự" @bind="@_attendee" />
+                        </div>
+                        <div class="form-group text-center">
+                            <button type="button" class="btn btn-success" @onclick="Save">Register Account</button>
+                        </div>
+                        <div class="form-group text-center">
+                            <label>Chương Trình Được Bảo Trợ Bởi</label>
+                            <img src="/Images/sponsor-01.png" class="img-thumbnail" alt="abc-logo">                            
+                        </div>                           
 
                     </form>
                 </div>
@@ -70,6 +80,7 @@
     string _email = string.Empty;
     string _phone = string.Empty;
     string _address = string.Empty;
+    public int _attendee = 1;
     string _createdby;
     DateTime _createdon;
     string _modifiedby;
@@ -98,6 +109,7 @@
             PageSubscriber.Email = _email;
             PageSubscriber.Phone = _phone;
             PageSubscriber.Address = _address;
+            PageSubscriber.NoAttendee = _attendee;
             PageSubscriber = await PageSubscriberService.AddPageSubscriberAsync(PageSubscriber);
             await logger.LogInformation("PageSubscriber Added {PageSubscriber}", PageSubscriber);
             AddModuleMessage("Account Created Successfully", MessageType.Success);
